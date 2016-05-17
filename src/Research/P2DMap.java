@@ -383,6 +383,7 @@ public class P2DMap {
 			MedMap m) {
 		// currentBesttm = new TreeMap<Integer, TreeMap<Double, Integer>> (tm);
 		double difference=0;
+		double difference2=0;
 		currentBesttm = DeepClone.deepClone(tm);
 		// currentBesttm = tm;
 		// localBestDist = Double.MAX_VALUE;
@@ -510,11 +511,12 @@ public class P2DMap {
 							difference=(newdist_i + newdist_j) - (olddist_i + olddist_j);
 						}
 					}
+					else if(first) difference2=(newdist_i + newdist_j) - (olddist_i + olddist_j);
 					if (((newdist_i + newdist_j) - (olddist_i + olddist_j))<=difference) {
 						
 						difference=(newdist_i + newdist_j) - (olddist_i + olddist_j);
 						
-						//System.out.println("First Swapped"+" i: "+i+" j: "+j+" pat1: "+pat1+" pat2: "+pat2+" old dist i: "+olddist_i+" old dist j: "+olddist_j);
+						System.out.println("First Swapped"+" i: "+i+" j: "+j+" pat1: "+pat1+" pat2: "+pat2+" old dist i: "+olddist_i+" old dist j: "+olddist_j);
 						
 						// System.out.println(currentBestDist);
 						// globalBesttm =new TreeMap<Integer,
@@ -551,8 +553,8 @@ public class P2DMap {
 						(localBesttm.get(j)).remove(olddist_j);
 						(localBesttm.get(j)).put(newdist_j, pat1);
 
-						(localBesttm.get(i)).put(23456.64326, pat2);
-						// make pat1 and pat2 tabu now
+						//(localBesttm.get(i)).put(23456.64326, pat2);
+						//make pat1 and pat2 tabu now
 						tabulist.put(pat1, 10);
 						tabulist.put(pat2, 10);
 						if (first)
