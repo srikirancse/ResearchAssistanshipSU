@@ -16,6 +16,7 @@ public class P2DMap {
 
 	static ArrayList<Integer> docCount = new ArrayList<Integer>();
 	static ArrayList<Integer> patCount = new ArrayList<Integer>();
+	static ArrayList<Integer> unPatAlgo1 = new ArrayList<Integer>();
 
 	static TreeMap<Integer, TreeMap<Double, Integer>> globalBesttm = new TreeMap<Integer, TreeMap<Double, Integer>>();
 	static TreeMap<Integer, TreeMap<Double, Integer>> localBesttm = new TreeMap<Integer, TreeMap<Double, Integer>>();
@@ -25,129 +26,71 @@ public class P2DMap {
 	static double localBestDist = Integer.MAX_VALUE;
 	static double currentBestDist = 0;
 
-	public static int map2Doc(int p, MedMap m, int[] arr) {
-		TreeMap<Double, Integer> tm = new TreeMap<Double, Integer>();
-		// this function takes coordinates of patients and returns the index of
-		// the nearest doctor
-		for (int i = 0; i < m.doctorcount; i++) {
-			if (arr[i] != 0) {
-				// System.out.println("searching on doctor: " + m.doctors[i][0]
-				// + " " + m.doctors[i][1]);
-				Double d = Haversine.haversine(m.patients[p][0], m.patients[p][1], m.doctors[i][0], m.doctors[i][1]);
-				// System.out.println("Distance: " + d);
-				tm.put(d, i);
-			}
-		}
-		if (tm.isEmpty())
-			return -1;
-		else {
-			// System.out.println("Shortest distance found:" + tm.firstKey());
-			int index = tm.get(tm.firstKey());
-			dist[p] = tm.firstKey();
-			algo1Dist += tm.firstKey();
-			arr[index]--;
-			// System.out.println("Patient num: "+p+" is assigned to doctor
-			// number "+index);
-			return index;
-		}
-
-	}
-
-	public static int[] map2Pat(int d, MedMap m, int[] arr, boolean[] isPatientAssigned) {
-		// this function takes coordinates of doctors and returns
-		// the indices of assigned nearest patients in an array
-		int patientIndex[] = new int[100];
-		TreeMap<Double, Integer> tm = new TreeMap<Double, Integer>();
-		int count = 0;
-
-		if (arr[d] == 0)
-			return null;
-
-		else {
-			for (int i = 0; i < m.patientcount; i++) {
-				if (arr[d] != 0 && (!isPatientAssigned[i])) {
-					Double dist = Haversine.haversine(m.patients[i][0], m.patients[i][1], m.doctors[d][0],
-							m.doctors[d][1]);
-					tm.put(dist, i);
-				}
-			}
-			// System.out.println("Paients assigned to doctor: " + d + " With
-			// capacity: " + arr[d]);
-			for (Map.Entry<Double, Integer> entry : tm.entrySet()) {
-				if (arr[d] == 0) {
-					// System.out.println("Assignment done!");
-					break;
-				}
-				Integer value = entry.getValue();
-				Double key = entry.getKey();
-				patientIndex[count] = value;
-				// dist[value]=key;
-				count++;
-				arr[d]--;
-				isPatientAssigned[value] = true;
-				// System.out.println(value + " Distance: " + key);
-				algo2Dist += key;
-			}
-			return patientIndex;
-		}
-
-	}
-
-	public static int map2Pat3(int p, MedMap m, int[] arr) {
-		TreeMap<Double, Integer> tm = new TreeMap<Double, Integer>();
-		// this function takes coordinates of patients and returns the index of
-		// the nearest doctor
-		for (int i = 0; i < m.patientcount; i++) {
-			if (arr[i] != 0) {
-				// System.out.println("searching on doctor: " + m.doctors[i][0]
-				// + " " + m.doctors[i][1]);
-				Double d = Haversine.haversine(m.patients[i][0], m.patients[i][1], m.doctors[p][0], m.doctors[p][1]);
-				// System.out.println("Distance: " + d);
-				tm.put(d, i);
-			}
-		}
-		if (tm.isEmpty())
-			return -1;
-		else {
-			// System.out.println("Shortest distance found:" + tm.firstKey());
-			int index = tm.get(tm.firstKey());
-			// dist[p] = tm.firstKey();
-			arr[index]--;
-			// System.out.println("Patient num: "+p+" is assigned to doctor
-			// number "+index);
-			return index;
-		}
-
-	}
-
-	public static TreeMap<Integer, Integer> algo1(MedMap m) {
+	public static TreeMap<Integer, TreeMap<Double, Integer>> algo1(MedMap m) {
 		// Algorithm 1: This algorithm maps nearest doctors to each patient
+		TreeMap<Integer, TreeMap<Double, Integer>> tm1 = new TreeMap<Integer, TreeMap<Double, Integer>>();
 		int p[] = new int[100010];
 		Collections.shuffle(patCount);
 		for (int i = 0; i < m.docCap.length; i++) {
 			p[i] = m.docCap[i];
 		}
-		TreeMap<Integer, Integer> tm2 = new TreeMap<Integer, Integer>();
+		for (int i = 0; i < m.patientcount; i++) {
+			unPatAlgo1.add(i);
+		}
 		algo1Dist = 0;
 		for (int i = 0; i < m.patientcount; i++) {
 			// System.out.println("Patient number: "+patCount.get(i)+"
 			// Co-ordinates: "+m.patients[patCount.get(i)][0]+"
 			// "+m.patients[patCount.get(i)][1]);
-			int d = map2Doc(patCount.get(i), m, p);
-			if (d == -1) {
-				// System.err.println("Doctors unavailable from patient num: " +
-				// i);
+
+			// int d = map2Doc(patCount.get(i), m, p);
+
+			int p1 = patCount.get(i);
+
+			TreeMap<Double, Integer> tm = new TreeMap<Double, Integer>();
+			// this function takes coordinates of patients and returns the index
+			// of
+			// the nearest doctor
+			for (int j = 0; j < m.doctorcount; j++) {
+				if (p[j] != 0) {
+					// System.out.println("searching on doctor: " +
+					// m.doctors[i][0]
+					// + " " + m.doctors[i][1]);
+					Double d = Haversine.haversine(m.patients[p1][0], m.patients[p1][1], m.doctors[j][0],
+							m.doctors[j][1]);
+					// System.out.println("Distance: " + d);
+					tm.put(d, j);
+				}
+			}
+			if (tm.isEmpty())
 				break;
-			} else {
-				tm2.put(patCount.get(i), d);
+			else {
+				// System.out.println("Shortest distance found:" +
+				// tm.firstKey());
+				int index = tm.get(tm.firstKey());
+				double dist = tm.firstKey();
+				if (!tm1.containsKey(tm.get(tm.firstKey())))
+					tm1.put(index, new TreeMap<Double, Integer>());
+				tm1.get(index).put(dist, patCount.get(i));
+				algo1Dist += tm.firstKey();
+				p[index]--;
+				unPatAlgo1.remove(patCount.get(i));
+				// System.out.println("Patient num: "+p+" is assigned to doctor
+				// number "+index);
 			}
 
 		}
-		return tm2;
+		globalBesttm = DeepClone.deepClone(tm1);
+		localBesttm = DeepClone.deepClone(tm1);
+		globalBestDist = algo1Dist;// initializing the static variable
+		localBestDist = globalBestDist;
+		currentBestDist = globalBestDist;
+		return tm1;
 	}
 
-	public static int[][] algo2(MedMap m) {
+	public static TreeMap<Integer, TreeMap<Double, Integer>> algo2(MedMap m) {
 		// Algorithm 2: This algorithm maps nearest patients to each doctor
+		TreeMap<Integer, TreeMap<Double, Integer>> tm2 = new TreeMap<Integer, TreeMap<Double, Integer>>();
 		boolean isPatientAssigned[] = new boolean[1000010];
 		int p[] = new int[100010];
 		Collections.shuffle(docCount);
@@ -158,15 +101,57 @@ public class P2DMap {
 		}
 		// System.out.println("Algo 2 starts!");
 
-		int matrix[][] = new int[m.doctorcount][100];
+		//int matrix[][] = new int[m.doctorcount][100];
 		if (m.doctorcount == 0)
 			System.out.println("No doctors available at the moment!");
 		else {
 			for (int i = 0; i < m.doctorcount; i++) {
-				matrix[docCount.get(i)] = map2Pat(docCount.get(i), m, p, isPatientAssigned);
+				//matrix[docCount.get(i)] = map2Pat(docCount.get(i), m, p, isPatientAssigned);
+				
+				int d=docCount.get(i);
+				int patientIndex[] = new int[100];
+				TreeMap<Double, Integer> tm = new TreeMap<Double, Integer>();
+				int count = 0;
+
+				if (p[d] == 0)
+					continue;
+
+				else {
+					for (int j = 0; j < m.patientcount; j++) {
+						if (p[d] != 0 && (!isPatientAssigned[j])) {
+							Double dist = Haversine.haversine(m.patients[j][0], m.patients[j][1], m.doctors[d][0],
+									m.doctors[d][1]);
+							tm.put(dist, j);
+						}
+					}
+					// System.out.println("Paients assigned to doctor: " + d + " With
+					// capacity: " + arr[d]);
+					tm2.put(d, new TreeMap<Double,Integer>());
+					for (Map.Entry<Double, Integer> entry : tm.entrySet()) {
+						if (p[d] == 0) {
+							// System.out.println("Assignment done!");
+							break;
+						}
+						Integer value = entry.getValue();
+						Double key = entry.getKey();
+						tm2.get(d).put(key, value);
+						//patientIndex[count] = value;
+						// dist[value]=key;
+						//count++;
+						p[d]--;
+						isPatientAssigned[value] = true;
+						// System.out.println(value + " Distance: " + key);
+						algo2Dist += key;
+					}
+				}
 			}
 		}
-		return matrix;
+		globalBesttm = DeepClone.deepClone(tm2);
+		localBesttm = DeepClone.deepClone(tm2);
+		globalBestDist = algo2Dist;// initializing the static variable
+		localBestDist = globalBestDist;
+		currentBestDist = globalBestDist;
+		return tm2;
 	}
 
 	public static TreeMap<Integer, TreeMap<Double, Integer>> algo3(MedMap m) {
@@ -211,6 +196,21 @@ public class P2DMap {
 				p[n]--;
 			}
 		}
+
+		/*
+		 * for (int i=0;i<m.doctorcount;i++){ if(m.docCap[i]==0) continue;
+		 * TreeMap<Double, Integer> unpattm = new TreeMap<Double, Integer>();
+		 * TreeMap<Double, Integer> pattm = tm3.get(i); boolean flag=true; for
+		 * (int j=0;j<m.patientcount;j++){ if(!isPatientAssigned[j]){
+		 * unpattm.put((Haversine.haversine(m.patients[j][0], m.patients[j][1],
+		 * m.doctors[i][0],m.doctors[i][1])),j); } } while(flag){
+		 * if(unpattm.firstKey()<pattm.lastKey()){ System.out.println(
+		 * "Repalcing: "+pattm.firstKey()+" with "+unpattm.lastKey());
+		 * pattm.remove(pattm.lastKey());
+		 * pattm.put(unpattm.firstKey(),unpattm.get(unpattm.firstKey()));
+		 * unpattm.remove(unpattm.firstKey()); } else flag=false; } }
+		 */
+
 		// globalBesttm = new TreeMap<Integer, TreeMap<Double, Integer>> (tm3);
 		globalBesttm = DeepClone.deepClone(tm3);
 		// globalBesttm = tm3;
@@ -228,184 +228,49 @@ public class P2DMap {
 				globalBestDist += value2;
 			}
 		}
-		// localBestDist = globalBestDist;
+		localBestDist = globalBestDist;
 		currentBestDist = globalBestDist;
-		// System.out.println("Total distance from method " + (int)
-		// globalBestDist + " KM");
+		//System.out.println("Total distance from method " + (int) globalBestDist + " KM");
 		return tm3;
 	}
-
-	public static TreeMap<Integer, TreeMap<Double, Integer>> tabuSearch(TreeMap<Integer, TreeMap<Double, Integer>> tm,
-			MedMap m) {
-		localBestDist = Double.MAX_VALUE;
-		System.out.println(localBestDist < 10078.289895292493);
-		int count = 0;
-		currentBesttm = tm;
-		HashMap<Integer, Integer> tabulist = new HashMap<Integer, Integer>();
-		// System.out.println("Tabu search starts, " + currentBesttm.size() + "
-		// " + tm.size());
-		for (int iter = 0; iter < 500; iter++) {
-			// System.out.println("Entered for block");
-			for (int i = 0; i < currentBesttm.size() - 1; i++) {
-				// System.out.println("Entered for block");
-				if (m.docCap[i] == 0)
-					continue;
-				boolean flag_i = false;
-				double olddist_i;
-				int pat1;
-				boolean isTabu1 = false;
-				TreeMap<Double, Integer> locpattm1 = currentBesttm.get(i);
-				olddist_i = locpattm1.lastKey();
-				pat1 = locpattm1.get(olddist_i);
-				if (tabulist.containsKey(pat1))
-					isTabu1 = true; // should not consider pat 1 for swap
-				while (isTabu1) {// finds the next tabu-free pat1 to swap
-					// System.out.println(count++);
-					// System.out.println("Entered while tabu1 block");
-					try {
-						olddist_i = locpattm1.lowerKey(olddist_i);
-						pat1 = locpattm1.get(olddist_i);
-						if (!tabulist.containsKey(pat1))
-							break;
-					} catch (Exception ex) {
-						flag_i = true;
-						break;
-					}
-				}
-				if (flag_i)
-					continue;
-
-				for (int j = i + 1; j <= currentBesttm.size() - 1; j++) {
-					boolean flag_j = false;
-					if (m.docCap[j] == 0)
-						continue;
-					// System.out.println("Entered for block i=" + i + " j=" +
-					// j);
-
-					double olddist_j;
-
-					int pat2;
-
-					boolean isTabu2 = false;
-
-					TreeMap<Double, Integer> locpattm2 = currentBesttm.get(j);
-
-					olddist_j = locpattm2.lastKey();
-
-					pat2 = locpattm2.get(olddist_j);
-
-					if (tabulist.containsKey(pat2))
-						isTabu2 = true; // should not consider pat 2 for swap
-
-					while (isTabu2) {// finds the next tabu-free pat2 to swap
-						// System.out.println("Entered while tabu1 block");
-						try {
-							olddist_j = locpattm2.lowerKey(olddist_j);
-							pat2 = locpattm2.get(olddist_j);
-							if (!tabulist.containsKey(pat2))
-								break;
-						} catch (Exception ex) {
-							flag_j = true;
-							break;
-						}
-					}
-					if (flag_j)
-						continue;
-
-					if (!tabulist.isEmpty()) {// initial tabu operations
-						Iterator it = tabulist.entrySet().iterator();
-						while (it.hasNext()) {
-							Map.Entry pair = (Map.Entry) it.next();
-							int key = (int) pair.getKey();
-							int value = (int) pair.getValue();
-							value--;
-							if (value == 0) {
-								// System.out.println("Entered if");
-								it.remove();
-							} else {
-								// System.out.println("Entered else");
-								tabulist.put(key, value);
-							}
-							// it.remove(); // avoids a
-							// ConcurrentModificationException
-						}
-						/*
-						 * for (Map.Entry<Integer, Integer> entry2 :
-						 * tabulist.entrySet()) { int value = entry2.getValue();
-						 * int key = entry2.getKey(); value--; if (value == 0){
-						 * System.out.println("Entered if");
-						 * tabulist.remove(key); } else{ System.out.println(
-						 * "Entered else"); tabulist.put(key, value); } }
-						 */
-					}
-
-					double newdist_i = Haversine.haversine(m.doctors[i][0], m.doctors[i][1], m.patients[pat2][0],
-							m.patients[pat2][1]);
-					double newdist_j = Haversine.haversine(m.doctors[j][0], m.doctors[j][1], m.patients[pat1][0],
-							m.patients[pat1][1]);
-					currentBestDist = globalBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
-					// System.out.println("Cuur dist:" + currentBestDist +
-					// "Global dist:" + globalBestDist);
-
-					if (currentBestDist < globalBestDist) {
-						System.out.println(currentBestDist);
-						globalBesttm = currentBesttm;
-						globalBestDist = currentBestDist;
-						(globalBesttm.get(i)).remove(olddist_i);
-						(globalBesttm.get(i)).put(newdist_i, pat2);
-						(globalBesttm.get(j)).remove(olddist_j);
-						(globalBesttm.get(j)).put(newdist_j, pat1);
-						// make pat1 and pat2 tabu now
-						tabulist.put(pat1, 10);
-						tabulist.put(pat2, 10);
-						localBestDist = globalBestDist;
-						localBesttm = globalBesttm;
-					} else if (currentBestDist < localBestDist) {
-						localBesttm = currentBesttm;
-						localBestDist = currentBestDist;
-						(localBesttm.get(i)).remove(olddist_i);
-						(localBesttm.get(i)).put(newdist_i, pat2);
-						(localBesttm.get(j)).remove(olddist_j);
-						(localBesttm.get(j)).put(newdist_j, pat1);
-						// make pat1 and pat2 tabu now
-						tabulist.put(pat1, 10);
-						tabulist.put(pat2, 10);
-					}
-				}
-			}
-			currentBesttm = localBesttm;
-		}
-		System.out.println("Tabu search 1 results:" + (int) globalBestDist + " KM");
-		return globalBesttm;
-	}
-
-	public static TreeMap<Integer, TreeMap<Double, Integer>> tabuSearch2(TreeMap<Integer, TreeMap<Double, Integer>> tm,
+	
+	public static TreeMap<Integer, TreeMap<Double, Integer>> tabuSearch1(TreeMap<Integer, TreeMap<Double, Integer>> tm,
 			MedMap m) {
 		// currentBesttm = new TreeMap<Integer, TreeMap<Double, Integer>> (tm);
-		double difference=0;
-		double difference2=0;
+		double difference = 0;
+		double difference2 = 0;
 		currentBesttm = DeepClone.deepClone(tm);
 		// currentBesttm = tm;
 		// localBestDist = Double.MAX_VALUE;
 		HashMap<Integer, Integer> tabulist = new HashMap<Integer, Integer>();
 		// System.out.println("Tabu search starts, " + currentBesttm.size() + "
 		// " + tm.size());
-		for (int iter = 0; iter < 500; iter++) {
+		for (int iter = 0; iter < 700; iter++) {
 			boolean b = true;
-			boolean first = true;
+			boolean first1 = true;
+			boolean first2 = true;
+			boolean first11 = false;
+			boolean first22 = false;
+			int pat1 = 0;
+			int pat2 = 0;
+			boolean makeTabu = false;
 			// System.out.println("Entered for block");
 			for (int i = 0; i < currentBesttm.size() - 1; i++) {
 				if (m.docCap[i] == 0)
 					continue;
 				boolean flag_i = false;
 				double olddist_i;
-				int pat1;
+
 				boolean isTabu1 = false;
 				TreeMap<Double, Integer> locpattm1 = currentBesttm.get(i);
-				olddist_i = locpattm1.lastKey();
+				try{
+					olddist_i = locpattm1.lastKey();
+				}catch(Exception ex){
+					continue;
+				}
 				pat1 = locpattm1.get(olddist_i);
 				if (olddist_i > 1000)
-					System.out.println("First i :" + olddist_i+" Patient number: "+pat1);
+					System.out.println("First i :" + olddist_i + " Patient number:" + pat1);
 				if (tabulist.containsKey(pat1))
 					isTabu1 = true; // should not consider pat 1 for swap
 				while (isTabu1) {// finds the next tabu-free pat1 to swap
@@ -423,8 +288,39 @@ public class P2DMap {
 						break;
 					}
 				}
-				if (flag_i)
+				if (flag_i) {
+					//System.out.println("First continue");
+
+					if (!tabulist.isEmpty()) {// initial tabu operations
+						// System.out.println("inside if");
+						Iterator it = tabulist.entrySet().iterator();
+						while (it.hasNext()) {
+							Map.Entry pair = (Map.Entry) it.next();
+							int key = (int) pair.getKey();
+							int value = (int) pair.getValue();
+							value--;
+							if (value == 0) {
+								// System.out.println("Entered if");
+								it.remove();
+							} else {
+								// System.out.println("Entered else");
+								tabulist.put(key, value);
+							}
+							// it.remove(); // avoids a
+							// ConcurrentModificationException
+						}
+						/*
+						 * for (Map.Entry<Integer, Integer> entry2 :
+						 * tabulist.entrySet()) { int value = entry2.getValue();
+						 * int key = entry2.getKey(); value--; if (value == 0){
+						 * System.out.println("Entered if");
+						 * tabulist.remove(key); } else{ System.out.println(
+						 * "Entered else"); tabulist.put(key, value); } }
+						 */
+					}
+
 					continue;
+				}
 
 				for (int j = i + 1; j <= currentBesttm.size() - 1; j++) {
 					boolean flag_j = false;
@@ -433,20 +329,25 @@ public class P2DMap {
 					// System.out.println("Entered for block i=" + i + " j=" +
 					// j);
 
-					double olddist_j;
-
-					int pat2;
+					double olddist_j=0;
 
 					boolean isTabu2 = false;
 
 					TreeMap<Double, Integer> locpattm2 = currentBesttm.get(j);
+					
+					try{
+						olddist_j = locpattm2.lastKey();
+					}
+					catch(Exception ex){
+						//System.out.println("Doc num: "+j+" DocCap: "+m.docCap[j]);
+						continue;
+					}
+					
 
-					olddist_j = locpattm2.lastKey();
-					
 					pat2 = locpattm2.get(olddist_j);
-					
+
 					if (olddist_j > 1000)
-						System.out.println("First j :" + olddist_j+" Patient number"+ pat2);
+						System.out.println("First j :" + olddist_j + " Patient number" + pat2);
 
 					if (tabulist.containsKey(pat2))
 						isTabu2 = true; // should not consider pat 2 for swap
@@ -456,7 +357,7 @@ public class P2DMap {
 						try {
 							olddist_j = locpattm2.lowerKey(olddist_j);
 							pat2 = locpattm2.get(olddist_j);
-							if (!tabulist.containsKey(pat2)){
+							if (!tabulist.containsKey(pat2)) {
 								if (olddist_j > 1000)
 									System.out.println("Second j :" + olddist_j);
 								break;
@@ -466,8 +367,40 @@ public class P2DMap {
 							break;
 						}
 					}
-					if (flag_j)
+					if (flag_j) {
+						//System.out.println("Second Continue");
+
+						if (!tabulist.isEmpty()) {// initial tabu operations
+							//System.out.println("inside if");
+							Iterator it = tabulist.entrySet().iterator();
+							while (it.hasNext()) {
+								Map.Entry pair = (Map.Entry) it.next();
+								int key = (int) pair.getKey();
+								int value = (int) pair.getValue();
+								value--;
+								if (value == 0) {
+									// System.out.println("Entered if");
+									it.remove();
+								} else {
+									// System.out.println("Entered else");
+									tabulist.put(key, value);
+								}
+								// it.remove(); // avoids a
+								// ConcurrentModificationException
+							}
+							/*
+							 * for (Map.Entry<Integer, Integer> entry2 :
+							 * tabulist.entrySet()) { int value =
+							 * entry2.getValue(); int key = entry2.getKey();
+							 * value--; if (value == 0){ System.out.println(
+							 * "Entered if"); tabulist.remove(key); } else{
+							 * System.out.println( "Entered else");
+							 * tabulist.put(key, value); } }
+							 */
+						}
+
 						continue;
+					}
 
 					if (!tabulist.isEmpty()) {// initial tabu operations
 						Iterator it = tabulist.entrySet().iterator();
@@ -500,79 +433,494 @@ public class P2DMap {
 							m.patients[pat2][1]);
 					double newdist_j = Haversine.haversine(m.doctors[j][0], m.doctors[j][1], m.patients[pat1][0],
 							m.patients[pat1][1]);
-					currentBestDist = globalBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
+
 					// System.out.println("Cuur dist:" + currentBestDist
 					// +"Global dist:" + globalBestDist);
-					if ((newdist_i + newdist_j) - (olddist_i + olddist_j) < 0){
-						System.out.println("new dist: i: " + i + ", j: " + j + " " + (newdist_i + newdist_j)
-								+ " olddist:" + olddist_i + " " + olddist_j + " Difference: "
-								+ ((newdist_i + newdist_j) - (olddist_i + olddist_j)));
-						if (first){
-							difference=(newdist_i + newdist_j) - (olddist_i + olddist_j);
+					if ((newdist_i + newdist_j) - (olddist_i + olddist_j) < 0) {
+
+						// System.out.println("new dist: i: " + i + ", j: " + j+
+						// " " + (newdist_i + newdist_j) +
+						// " olddist:" +olddist_i + " " + olddist_j +
+						// " Difference: " +
+						// ((newdist_i + newdist_j) - (olddist_i + olddist_j)));
+
+						if (first1) {
+							difference = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+							first1 = false;
+							first11 = true;
 						}
+					} else if (first2) {
+						difference2 = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+						first2 = false;
+						first22 = true;
 					}
-					else if(first) difference2=(newdist_i + newdist_j) - (olddist_i + olddist_j);
-					if (((newdist_i + newdist_j) - (olddist_i + olddist_j))<=difference) {
-						
-						difference=(newdist_i + newdist_j) - (olddist_i + olddist_j);
-						
-						System.out.println("First Swapped"+" i: "+i+" j: "+j+" pat1: "+pat1+" pat2: "+pat2+" old dist i: "+olddist_i+" old dist j: "+olddist_j);
-						
+					if ((((newdist_i + newdist_j) - (olddist_i + olddist_j)) < difference) || first11) {
+
+						//System.out.println("Old diffetene: "+difference);
+
+						difference = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+
+						//System.out.println("New diffetene: "+difference);
+
+						// System.out.println("First Swapped"+" i: "+i+"
+						// j:"+j+"pat1: "+pat1+
+						// " pat2: "+pat2+" old dist i:"+olddist_i+
+						// " old dist j: "+olddist_j);
+
+						double currbestdist_dupl = currentBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
+
 						// System.out.println(currentBestDist);
 						// globalBesttm =new TreeMap<Integer,
 						// TreeMap<Double,Integer>> (currentBesttm);
-						globalBesttm = DeepClone.deepClone(currentBesttm);
+						// globalBesttm = DeepClone.deepClone(currentBesttm);
 						// globalBesttm = currentBesttm;
-						globalBestDist = currentBestDist;
-						(globalBesttm.get(i)).remove(olddist_i);
-						(globalBesttm.get(i)).put(newdist_i, pat2);
-						(globalBesttm.get(j)).remove(olddist_j);
-						(globalBesttm.get(j)).put(newdist_j, pat1);
-						 //System.out.println("Map equality:"+currentBesttm.equals(globalBesttm));"+ "make pat1 and pat2 tabu now
-						tabulist.put(pat1, 10);
-						tabulist.put(pat2, 10);
-						localBestDist = globalBestDist;
+						localBesttm = DeepClone.deepClone(currentBesttm);
+						// System.out.println("localBestDist: "+localBestDist+"
+						// currbestdist: "+currbestdist_dupl);
+						localBestDist = currbestdist_dupl;
+						(localBesttm.get(i)).remove(olddist_i);
+						(localBesttm.get(i)).put(newdist_i, pat2);
+						(localBesttm.get(j)).remove(olddist_j);
+						(localBesttm.get(j)).put(newdist_j, pat1);
+						// System.out.println("Map
+						// equality:"+currentBesttm.equals(globalBesttm));"+
+						// "make pat1 and pat2 tabu now
+						// localBestDist = globalBestDist;
 						// localBesttm = new TreeMap<Integer, TreeMap<Double,
 						// Integer>> (globalBesttm);
 						// localBesttm =new TreeMap<Integer,
 						// TreeMap<Double,Integer>> (globalBesttm);
-						localBesttm = DeepClone.deepClone(globalBesttm);
+						// localBesttm = DeepClone.deepClone(globalBesttm);
 						b = false;
-						if (first)
-							first = false;
-					} else if ((b && (currentBestDist < localBestDist)) || first) {
-						System.out.println("Second Swapped"+" i: "+i+" j: "+j+" pat1: "+pat1+" pat2: "+pat2+" old dist i: "+olddist_i+" old sit j: "+olddist_j);
+						if (first11)
+							first11 = false;
+						makeTabu = true;
+					} else if (b && (((newdist_i + newdist_j) - (olddist_i + olddist_j) < difference2) || first22)) {
+						//System.out.println("Old Difference: "+ difference2);
+						difference2 = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+						//System.out.println("Old Difference: "+ difference2);
+						// System.out.println("Second Swapped"+" i: "+i+"j:"+j+
+						// " pat1: "+pat1+" pat2: "+pat2+" old dist
+						// i:"+olddist_i+
+						// " old sit j: "+olddist_j);
+
+						double currbestdist_dupl = currentBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
 						// localBesttm = (TreeMap<Integer, TreeMap<Double,
 						// Integer>>)currentBesttm.clone();
 						// localBesttm = new TreeMap<Integer, TreeMap<Double,
 						// Integer>>(currentBesttm);
 						localBesttm = DeepClone.deepClone(currentBesttm);
-						localBestDist = currentBestDist;
+						//System.out.println("localBestDist: "+localBestDist+"currbestdist: "+currbestdist_dupl);
+						localBestDist = currbestdist_dupl;
 						(localBesttm.get(i)).remove(olddist_i);
 						(localBesttm.get(i)).put(newdist_i, pat2);
 						(localBesttm.get(j)).remove(olddist_j);
 						(localBesttm.get(j)).put(newdist_j, pat1);
 
-						//(localBesttm.get(i)).put(23456.64326, pat2);
-						//make pat1 and pat2 tabu now
-						tabulist.put(pat1, 10);
-						tabulist.put(pat2, 10);
-						if (first)
-							first = false;
+						// (localBesttm.get(i)).put(23456.64326, pat2);
+						// make pat1 and pat2 tabu now
 						// System.out.println("Map equality:
 						// "+currentBesttm.equals(localBesttm));
+						if (first22)
+							first22 = false;
+						makeTabu = true;
+					}
+				}
+				if (unPatAlgo1.size()==0) continue;
+				int unPat = unPatAlgo1.get(unPatAlgo1.size()-1);
+				double newDist = Haversine.haversine(m.doctors[i][0], m.doctors[i][1], m.patients[unPat][0],
+						m.patients[unPat][1]); 
+				if ((newDist-olddist_i)<0 && (newDist-olddist_i)<difference){
+					//System.out.println("Algo 1 new code if");
+					difference = newDist-olddist_i;
+					double currbestdist_dupl = currentBestDist + newDist - olddist_i;
+					localBesttm = DeepClone.deepClone(currentBesttm);
+					localBestDist = currbestdist_dupl;
+					(localBesttm.get(i)).remove(olddist_i);
+					(localBesttm.get(i)).put(newDist, unPat);
+					unPatAlgo1.remove(unPatAlgo1.size()-1);
+					unPatAlgo1.add(pat1);
+				}
+				else if ((newDist-olddist_i) < difference2){
+					//System.out.println("Algo 1 new code else");
+					difference2 = newDist-olddist_i;
+					double currbestdist_dupl = currentBestDist + newDist - olddist_i;
+					localBesttm = DeepClone.deepClone(currentBesttm);
+					localBestDist = currbestdist_dupl;
+					(localBesttm.get(i)).remove(olddist_i);
+					(localBesttm.get(i)).put(newDist, unPat);
+					unPatAlgo1.remove(unPatAlgo1.size()-1);
+					unPatAlgo1.add(pat1);
+				}
+			}
+			// currentBesttm = new TreeMap<Integer, TreeMap<Double, Integer>>
+			// (localBesttm);
+			if (makeTabu) {
+				tabulist.put(pat1, 17);
+				tabulist.put(pat2, 17);
+			}
+			currentBesttm = DeepClone.deepClone(localBesttm);
+			currentBestDist = localBestDist;
+			if (currentBestDist < globalBestDist) {
+				globalBesttm = DeepClone.deepClone(currentBesttm);
+				//System.out.println("globalBestDist changed: " + globalBestDist + " to currbestdist: " + currentBestDist);
+				globalBestDist = currentBestDist;
+			}
+			double tabudist = 0;
+			/*for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : currentBesttm.entrySet()) {
+				int key = entry.getKey();
+				TreeMap<Double, Integer> value = entry.getValue();
+				// out1.println(key + " => " + value + " Doctor Capacity: "
+				// +m.docCap[value]);
+				// System.out.println("Patients asssigned to Doctor: " + key);
+				for (Map.Entry<Double, Integer> entry2 : value.entrySet()) {
+					int key2 = entry2.getValue();
+					double value2 = entry2.getKey();
+					// out.println(key + " => " + value);
+					// System.out.println("Patient number :" + key2 +
+					// "Distance: " + value2 + " KMS");
+					tabudist += value2;
+				}
+			}*/
+			//System.out.println("Result befor search: " + (int) tabudist + "KM");
+			//System.out.println("Next search");
+			// currentBesttm = localBesttm;
+
+			// System.out.println("localBestDist: "+localBestDist);
+		}
+		System.out.println("Tabu search results: " + (int) globalBestDist + " KM");
+		return globalBesttm;
+	}
+
+	public static TreeMap<Integer, TreeMap<Double, Integer>> tabuSearch2(TreeMap<Integer, TreeMap<Double, Integer>> tm,
+			MedMap m) {
+		// currentBesttm = new TreeMap<Integer, TreeMap<Double, Integer>> (tm);
+		double difference = 0;
+		double difference2 = 0;
+		currentBesttm = DeepClone.deepClone(tm);
+		// currentBesttm = tm;
+		// localBestDist = Double.MAX_VALUE;
+		HashMap<Integer, Integer> tabulist = new HashMap<Integer, Integer>();
+		// System.out.println("Tabu search starts, " + currentBesttm.size() + "
+		// " + tm.size());
+		for (int iter = 0; iter < 700; iter++) {
+			boolean b = true;
+			boolean first1 = true;
+			boolean first2 = true;
+			boolean first11 = false;
+			boolean first22 = false;
+			int pat1 = 0;
+			int pat2 = 0;
+			boolean makeTabu = false;
+			// System.out.println("Entered for block");
+			for (int i = 0; i < currentBesttm.size() - 1; i++) {
+				if (m.docCap[i] == 0)
+					continue;
+				boolean flag_i = false;
+				double olddist_i;
+
+				boolean isTabu1 = false;
+				TreeMap<Double, Integer> locpattm1 = currentBesttm.get(i);
+				try{
+					olddist_i = locpattm1.lastKey();
+				}catch(Exception ex){
+					continue;
+				}
+				pat1 = locpattm1.get(olddist_i);
+				if (olddist_i > 1000)
+					System.out.println("First i :" + olddist_i + " Patient number:" + pat1);
+				if (tabulist.containsKey(pat1))
+					isTabu1 = true; // should not consider pat 1 for swap
+				while (isTabu1) {// finds the next tabu-free pat1 to swap
+					// System.out.println("Entered while tabu1 block");
+					try {
+						olddist_i = locpattm1.lowerKey(olddist_i);
+						pat1 = locpattm1.get(olddist_i);
+						if (!tabulist.containsKey(pat1)) {
+							if (olddist_i > 1000)
+								System.out.println("Second i :" + olddist_i);
+							break;
+						}
+					} catch (Exception ex) {
+						flag_i = true;
+						break;
+					}
+				}
+				if (flag_i) {
+					//System.out.println("First continue");
+
+					if (!tabulist.isEmpty()) {// initial tabu operations
+						// System.out.println("inside if");
+						Iterator it = tabulist.entrySet().iterator();
+						while (it.hasNext()) {
+							Map.Entry pair = (Map.Entry) it.next();
+							int key = (int) pair.getKey();
+							int value = (int) pair.getValue();
+							value--;
+							if (value == 0) {
+								// System.out.println("Entered if");
+								it.remove();
+							} else {
+								// System.out.println("Entered else");
+								tabulist.put(key, value);
+							}
+							// it.remove(); // avoids a
+							// ConcurrentModificationException
+						}
+						/*
+						 * for (Map.Entry<Integer, Integer> entry2 :
+						 * tabulist.entrySet()) { int value = entry2.getValue();
+						 * int key = entry2.getKey(); value--; if (value == 0){
+						 * System.out.println("Entered if");
+						 * tabulist.remove(key); } else{ System.out.println(
+						 * "Entered else"); tabulist.put(key, value); } }
+						 */
+					}
+
+					continue;
+				}
+
+				for (int j = i + 1; j <= currentBesttm.size() - 1; j++) {
+					boolean flag_j = false;
+					if (m.docCap[j] == 0)
+						continue;
+					// System.out.println("Entered for block i=" + i + " j=" +
+					// j);
+
+					double olddist_j=0;
+
+					boolean isTabu2 = false;
+
+					TreeMap<Double, Integer> locpattm2 = currentBesttm.get(j);
+					
+					try{
+						olddist_j = locpattm2.lastKey();
+					}
+					catch(Exception ex){
+						//System.out.println("Doc num: "+j+" DocCap: "+m.docCap[j]);
+						continue;
+					}
+					
+
+					pat2 = locpattm2.get(olddist_j);
+
+					if (olddist_j > 1000)
+						System.out.println("First j :" + olddist_j + " Patient number" + pat2);
+
+					if (tabulist.containsKey(pat2))
+						isTabu2 = true; // should not consider pat 2 for swap
+
+					while (isTabu2) {// finds the next tabu-free pat2 to swap
+						// System.out.println("Entered while tabu1 block");
+						try {
+							olddist_j = locpattm2.lowerKey(olddist_j);
+							pat2 = locpattm2.get(olddist_j);
+							if (!tabulist.containsKey(pat2)) {
+								if (olddist_j > 1000)
+									System.out.println("Second j :" + olddist_j);
+								break;
+							}
+						} catch (Exception ex) {
+							flag_j = true;
+							break;
+						}
+					}
+					if (flag_j) {
+						//System.out.println("Second Continue");
+
+						if (!tabulist.isEmpty()) {// initial tabu operations
+							//System.out.println("inside if");
+							Iterator it = tabulist.entrySet().iterator();
+							while (it.hasNext()) {
+								Map.Entry pair = (Map.Entry) it.next();
+								int key = (int) pair.getKey();
+								int value = (int) pair.getValue();
+								value--;
+								if (value == 0) {
+									// System.out.println("Entered if");
+									it.remove();
+								} else {
+									// System.out.println("Entered else");
+									tabulist.put(key, value);
+								}
+								// it.remove(); // avoids a
+								// ConcurrentModificationException
+							}
+							/*
+							 * for (Map.Entry<Integer, Integer> entry2 :
+							 * tabulist.entrySet()) { int value =
+							 * entry2.getValue(); int key = entry2.getKey();
+							 * value--; if (value == 0){ System.out.println(
+							 * "Entered if"); tabulist.remove(key); } else{
+							 * System.out.println( "Entered else");
+							 * tabulist.put(key, value); } }
+							 */
+						}
+
+						continue;
+					}
+
+					if (!tabulist.isEmpty()) {// initial tabu operations
+						Iterator it = tabulist.entrySet().iterator();
+						while (it.hasNext()) {
+							Map.Entry pair = (Map.Entry) it.next();
+							int key = (int) pair.getKey();
+							int value = (int) pair.getValue();
+							value--;
+							if (value == 0) {
+								// System.out.println("Entered if");
+								it.remove();
+							} else {
+								// System.out.println("Entered else");
+								tabulist.put(key, value);
+							}
+							// it.remove(); // avoids a
+							// ConcurrentModificationException
+						}
+						/*
+						 * for (Map.Entry<Integer, Integer> entry2 :
+						 * tabulist.entrySet()) { int value = entry2.getValue();
+						 * int key = entry2.getKey(); value--; if (value == 0){
+						 * System.out.println("Entered if");
+						 * tabulist.remove(key); } else{ System.out.println(
+						 * "Entered else"); tabulist.put(key, value); } }
+						 */
+					}
+
+					double newdist_i = Haversine.haversine(m.doctors[i][0], m.doctors[i][1], m.patients[pat2][0],
+							m.patients[pat2][1]);
+					double newdist_j = Haversine.haversine(m.doctors[j][0], m.doctors[j][1], m.patients[pat1][0],
+							m.patients[pat1][1]);
+
+					// System.out.println("Cuur dist:" + currentBestDist
+					// +"Global dist:" + globalBestDist);
+					if ((newdist_i + newdist_j) - (olddist_i + olddist_j) < 0) {
+
+						// System.out.println("new dist: i: " + i + ", j: " + j+
+						// " " + (newdist_i + newdist_j) +
+						// " olddist:" +olddist_i + " " + olddist_j +
+						// " Difference: " +
+						// ((newdist_i + newdist_j) - (olddist_i + olddist_j)));
+
+						if (first1) {
+							difference = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+							first1 = false;
+							first11 = true;
+						}
+					} else if (first2) {
+						difference2 = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+						first2 = false;
+						first22 = true;
+					}
+					if ((((newdist_i + newdist_j) - (olddist_i + olddist_j)) < difference) || first11) {
+
+						//System.out.println("Old diffetene: "+difference);
+
+						difference = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+
+						//System.out.println("New diffetene: "+difference);
+
+						// System.out.println("First Swapped"+" i: "+i+"
+						// j:"+j+"pat1: "+pat1+
+						// " pat2: "+pat2+" old dist i:"+olddist_i+
+						// " old dist j: "+olddist_j);
+
+						double currbestdist_dupl = currentBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
+
+						// System.out.println(currentBestDist);
+						// globalBesttm =new TreeMap<Integer,
+						// TreeMap<Double,Integer>> (currentBesttm);
+						// globalBesttm = DeepClone.deepClone(currentBesttm);
+						// globalBesttm = currentBesttm;
+						localBesttm = DeepClone.deepClone(currentBesttm);
+						// System.out.println("localBestDist: "+localBestDist+"
+						// currbestdist: "+currbestdist_dupl);
+						localBestDist = currbestdist_dupl;
+						(localBesttm.get(i)).remove(olddist_i);
+						(localBesttm.get(i)).put(newdist_i, pat2);
+						(localBesttm.get(j)).remove(olddist_j);
+						(localBesttm.get(j)).put(newdist_j, pat1);
+						// System.out.println("Map
+						// equality:"+currentBesttm.equals(globalBesttm));"+
+						// "make pat1 and pat2 tabu now
+						// localBestDist = globalBestDist;
+						// localBesttm = new TreeMap<Integer, TreeMap<Double,
+						// Integer>> (globalBesttm);
+						// localBesttm =new TreeMap<Integer,
+						// TreeMap<Double,Integer>> (globalBesttm);
+						// localBesttm = DeepClone.deepClone(globalBesttm);
+						b = false;
+						if (first11)
+							first11 = false;
+						makeTabu = true;
+					} else if (b && (((newdist_i + newdist_j) - (olddist_i + olddist_j) < difference2) || first22)) {
+						//System.out.println("Old Difference: "+ difference2);
+						difference2 = (newdist_i + newdist_j) - (olddist_i + olddist_j);
+						//System.out.println("Old Difference: "+ difference2);
+						// System.out.println("Second Swapped"+" i: "+i+"j:"+j+
+						// " pat1: "+pat1+" pat2: "+pat2+" old dist
+						// i:"+olddist_i+
+						// " old sit j: "+olddist_j);
+
+						double currbestdist_dupl = currentBestDist - (olddist_i + olddist_j) + (newdist_i + newdist_j);
+						// localBesttm = (TreeMap<Integer, TreeMap<Double,
+						// Integer>>)currentBesttm.clone();
+						// localBesttm = new TreeMap<Integer, TreeMap<Double,
+						// Integer>>(currentBesttm);
+						localBesttm = DeepClone.deepClone(currentBesttm);
+						//System.out.println("localBestDist: "+localBestDist+"currbestdist: "+currbestdist_dupl);
+						localBestDist = currbestdist_dupl;
+						(localBesttm.get(i)).remove(olddist_i);
+						(localBesttm.get(i)).put(newdist_i, pat2);
+						(localBesttm.get(j)).remove(olddist_j);
+						(localBesttm.get(j)).put(newdist_j, pat1);
+
+						// (localBesttm.get(i)).put(23456.64326, pat2);
+						// make pat1 and pat2 tabu now
+						// System.out.println("Map equality:
+						// "+currentBesttm.equals(localBesttm));
+						if (first22)
+							first22 = false;
+						makeTabu = true;
 					}
 				}
 			}
 			// currentBesttm = new TreeMap<Integer, TreeMap<Double, Integer>>
 			// (localBesttm);
+			if (makeTabu) {
+				tabulist.put(pat1, 17);
+				tabulist.put(pat2, 17);
+			}
 			currentBesttm = DeepClone.deepClone(localBesttm);
-			System.out.println("Next search");
+			currentBestDist = localBestDist;
+			if (currentBestDist < globalBestDist) {
+				globalBesttm = DeepClone.deepClone(currentBesttm);
+				//System.out.println("globalBestDist changed: " + globalBestDist + " to currbestdist: " + currentBestDist);
+				globalBestDist = currentBestDist;
+			}
+			double tabudist = 0;
+			/*for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : currentBesttm.entrySet()) {
+				int key = entry.getKey();
+				TreeMap<Double, Integer> value = entry.getValue();
+				// out1.println(key + " => " + value + " Doctor Capacity: "
+				// +m.docCap[value]);
+				// System.out.println("Patients asssigned to Doctor: " + key);
+				for (Map.Entry<Double, Integer> entry2 : value.entrySet()) {
+					int key2 = entry2.getValue();
+					double value2 = entry2.getKey();
+					// out.println(key + " => " + value);
+					// System.out.println("Patient number :" + key2 +
+					// "Distance: " + value2 + " KMS");
+					tabudist += value2;
+				}
+			}*/
+			//System.out.println("Result befor search: " + (int) tabudist + "KM");
+			//System.out.println("Next search");
 			// currentBesttm = localBesttm;
 
 			// System.out.println("localBestDist: "+localBestDist);
 		}
-		System.out.println("Tabu search results:" + (int) globalBestDist + " KM");
+		System.out.println("Tabu search results: " + (int) globalBestDist + " KM");
 		return globalBesttm;
 	}
 
@@ -582,16 +930,17 @@ public class P2DMap {
 
 		m.circleGenerator(4, 6, 3);
 
-		try {
+		/*try {
 			out = new PrintStream(new FileOutputStream("C://Users/Srikiran Sistla/Desktop/output.txt"));
 			System.setOut(out);
 		} catch (Exception e) {
 			System.out.println(e);
-		}
+		}*/
 
 		System.out.println("\nAlgorithm 1 ");
-		TreeMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		TreeMap<Integer, TreeMap<Double, Integer>> map = new TreeMap<Integer, TreeMap<Double, Integer>>();
 		TreeMap<Integer, TreeMap<Double, Integer>> algo3tm = new TreeMap<Integer, TreeMap<Double, Integer>>();
+		TreeMap<Integer, TreeMap<Double, Integer>> algo4tm = new TreeMap<Integer, TreeMap<Double, Integer>>();
 		for (int i = 0; i < m.doctorcount; i++) {
 			docCount.add(i);
 		}
@@ -599,47 +948,84 @@ public class P2DMap {
 			patCount.add(i);
 		}
 
-		for (int k = 0; k < 6; k++) {
-			double algo1Dist_loc = 0;
+		for (int k = 0; k < 1; k++) {
+			double algo1dist = 0;
 			map = algo1(m);
 			// out1.println("Final results of algo 1:");
-			int matrix[][] = new int[m.doctorcount][100];
-			int matrixCount[] = new int[m.doctorcount];
-			int c = 0;
-			for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+			/*
+			 * int matrix[][] = new int[m.doctorcount][100]; int matrixCount[] =
+			 * new int[m.doctorcount]; int c = 0; for (Map.Entry<Integer,
+			 * Integer> entry : map.entrySet()) { int key = entry.getKey(); int
+			 * value = entry.getValue(); // out1.println(key + " => " + value +
+			 * " Doctor Capacity: " + // m.docCap[value]);
+			 * matrix[value][matrixCount[value]++] = key; } for (int i = 0; i <
+			 * m.doctorcount; i++) { // System.out.println(
+			 * "Patients assigned to doctor: " + i + " // with capacity: " +
+			 * m.docCap[i] // + " Co-ordinates" + m.doctors[i][0] + " " +
+			 * m.doctors[i][1]); for (int j = 0; j < matrixCount[i]; j++) { int
+			 * d = matrix[i][j]; if (d == 0) c++; if (d == 0 && c >= 2) break;
+			 * // System.out.println(matrix[i][j] + " Distance: " + // dist[d]);
+			 * algo1Dist_loc += dist[d]; } }
+			 */
+
+			for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : map.entrySet()) {
 				int key = entry.getKey();
-				int value = entry.getValue();
-				// out1.println(key + " => " + value + " Doctor Capacity: " +
-				// m.docCap[value]);
-				matrix[value][matrixCount[value]++] = key;
-			}
-			for (int i = 0; i < m.doctorcount; i++) {
-				// System.out.println("Patients assigned to doctor: " + i + "
-				// with capacity: " + m.docCap[i]
-				// + " Co-ordinates" + m.doctors[i][0] + " " + m.doctors[i][1]);
-				for (int j = 0; j < matrixCount[i]; j++) {
-					int d = matrix[i][j];
-					if (d == 0)
-						c++;
-					if (d == 0 && c >= 2)
-						break;
-					// System.out.println(matrix[i][j] + " Distance: " +
-					// dist[d]);
-					algo1Dist_loc += dist[d];
+				TreeMap<Double, Integer> value = entry.getValue();
+				// out1.println(key + " => " + value + " Doctor Capacity: "
+				// +m.docCap[value]);
+				//System.out.println("Patients asssigned to Doctor: " + key);
+				for (Map.Entry<Double, Integer> entry2 : value.entrySet()) {
+					int key2 = entry2.getValue();
+					double value2 = entry2.getKey();
+					// out.println(key + " => " + value);
+					//System.out.println("Patient number :" + key2 +
+					//" Distance: " + value2 + " KMS");
+					algo1dist += value2;
 				}
 			}
+
 			System.out.println("Total distance in run " + k + ": " + (int) algo1Dist + " KM");
+			
+			tabuSearch1(map,m);
+			
+			double percentage = ((algo1Dist - globalBestDist) / algo1Dist) * 100;
+			System.out.println("Percentage optimized: " + percentage + " % \n");
+			
+			tabuSearch2(map,m);
+			
+			percentage = ((algo1Dist - globalBestDist) / algo1Dist) * 100;
+			System.out.println("Percentage optimized: " + percentage + " % \n");
+			
 		}
 
 		System.out.println("\nAlgorithm 2 ");
-		for (int i = 0; i < 6; i++) {
-			algo2(m);
+		for (int i = 0; i < 1; i++) {
+			map=algo2(m);
+			for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : map.entrySet()) {
+				int key = entry.getKey();
+				TreeMap<Double, Integer> value = entry.getValue();
+				// out1.println(key + " => " + value + " Doctor Capacity: "
+				// +m.docCap[value]);
+				//System.out.println("Patients asssigned to Doctor: " + key+" DocCap: "+m.docCap[key]);
+				for (Map.Entry<Double, Integer> entry2 : value.entrySet()) {
+					int key2 = entry2.getValue();
+					double value2 = entry2.getKey();
+					// out.println(key + " => " + value);
+					//System.out.println("Patient number :" + key2 +
+					//"Distance: " + value2 + " KMS");
+					//algo3dist += value2;
+				}
+			}
 			System.out.println("Total distance in run " + i + ": " + (int) algo2Dist + " KM");
+			tabuSearch2(map,m);
+			double percentage = ((algo2Dist - globalBestDist) / algo2Dist) * 100;
+			System.out.println("Percentage optimized: " + percentage + " % \n");
 		}
 		System.out.println("\nAlgorithm 3 ");
 		for (int i = 0; i < 6; i++) {
 			algo3tm = algo3(m);
 			double algo3dist = 0;
+			double algo4dist = 0;
 			for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : algo3tm.entrySet()) {
 				int key = entry.getKey();
 				TreeMap<Double, Integer> value = entry.getValue();
@@ -650,15 +1036,32 @@ public class P2DMap {
 					int key2 = entry2.getValue();
 					double value2 = entry2.getKey();
 					// out.println(key + " => " + value);
-					// System.out.println("Patient number :" + key2 + "
-					// Distance: " + value2 + " KMS");
+					// System.out.println("Patient number :" + key2 +
+					// "Distance: " + value2 + " KMS");
 					algo3dist += value2;
 				}
 			}
 			System.out.println("Total distance in run " + i + ": " + (int) algo3dist + " KM");
 			// tabuSearch(algo3tm, m);
-			tabuSearch2(algo3tm, m);
-
+			algo4tm = tabuSearch2(algo3tm, m);
+			for (Map.Entry<Integer, TreeMap<Double, Integer>> entry : algo4tm.entrySet()) {
+				int key = entry.getKey();
+				TreeMap<Double, Integer> value = entry.getValue();
+				// out1.println(key + " => " + value + " Doctor Capacity: "
+				// +m.docCap[value]);
+				// System.out.println("Patients asssigned to Doctor: " + key);
+				for (Map.Entry<Double, Integer> entry2 : value.entrySet()) {
+					int key2 = entry2.getValue();
+					double value2 = entry2.getKey();
+					// out.println(key + " => " + value);
+					// System.out.println("Patient number :" + key2 +
+					// "Distance: " + value2 + " KMS");
+					algo4dist += value2;
+				}
+			}
+			double percentage = ((algo3dist - globalBestDist) / algo3dist) * 100;
+			System.out.println("Percentage optimized: " + percentage + " % \n");
+			//System.out.println("Total distance in run " + i + ": " + (int) algo3dist + " KM");
 		}
 		System.out.println("\nProgram Terminated!");
 	}

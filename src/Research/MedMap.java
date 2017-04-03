@@ -20,7 +20,7 @@ public class MedMap implements Cloneable {
 	public void circleGenerator(float x1,float y1, float r)
 	{	
 		System.out.println("Doctors:");
-		for(int i=0;i<10000;i++)
+		for(int i=0;i<1000000;i++)
 		{
 			x=rand.nextGaussian()*40;
 			y=rand.nextGaussian()*40;
@@ -36,7 +36,7 @@ public class MedMap implements Cloneable {
 			}
 		}
 		System.out.println("Doctor count:"+doctorcount); //changed to out
-		System.out.println("Patients:");
+		//System.out.println("Patients:");
 		for(int i=0;i<100000;i++)
 		{
 			x=rand.nextGaussian()*40;
@@ -69,8 +69,8 @@ public class MedMap implements Cloneable {
 		MedMap m=new MedMap();
 		
 		m.circleGenerator(4,6,3);
-		System.out.println(Haversine.haversine(17.3700,78.4800,43.0469,283.8556));
-		System.out.println(m.patients[1][0]+" "+m.patients[1][1]);
+		//System.out.println(Haversine.haversine(17.3700,78.4800,43.0469,283.8556));
+		//System.out.println(m.patients[1][0]+" "+m.patients[1][1]);
 	}
 
 }
